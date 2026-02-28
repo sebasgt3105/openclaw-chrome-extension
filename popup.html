@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Cheyen - Tu Asistente de Ads</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 380px;
+      height: 500px;
+      background: #0a0a0a;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .header {
+      background: linear-gradient(135deg, #00E599 0%, #00C896 100%);
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header img { width: 32px; height: 32px; border-radius: 50%; }
+    .header h1 { font-size: 16px; color: #000; font-weight: 600; }
+    .status { font-size: 11px; color: #000; opacity: 0.7; }
+    .chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+    .message {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .message.bot {
+      background: #1a1a1a;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .message.user {
+      background: #00E599;
+      color: #000;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .input-area {
+      padding: 10px;
+      border-top: 1px solid #333;
+      display: flex;
+      gap: 8px;
+    }
+    .input-area input {
+      flex: 1;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 20px;
+      outline: none;
+      font-size: 13px;
+    }
+    .input-area input:focus { border-color: #00E599; }
+    .input-area button {
+      background: #00E599;
+      color: #000;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .input-area button:hover { background: #00C896; }
+    .info { padding: 10px; background: #1a1a1a; font-size: 11px; color: #666; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>🤖 Cheyen</h1>
+      <div class="status">● Conectado - Tu Asistente de Ads</div>
+    </div>
+  </div>
+  <div class="chat" id="chat">
+    <div class="message bot">
+      ¡Hola! 👋 Soy Cheyen, tu asistente de marketing y publicidad.
+      <br><br>
+      Estoy conectado a tu cuenta de Meta Ads. Puedo:
+      <br>• Ver tus campañas y métricas
+      <br>• Analizar qué está funcionando
+      <br>• Recomendarte qué cambiar
+      <br><br>
+      ¿Qué quieres hacer hoy?
+    </div>
+  </div>
+  <div class="input-area">
+    <input type="text" id="messageInput" placeholder="Escribe tu mensaje...">
+    <button onclick="sendMessage()">Enviar</button>
+  </div>
+  <div class="info">
+    📊 Cuenta: C-ELEVATUS01 | Extensión v1.0
+  </div>
+  <script>
+    function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const message = input.value.trim();
+      if (!message) return;
+      
+      const chat = document.getElementById('chat');
+      
+      // Add user message
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.textContent = message;
+      chat.appendChild(userMsg);
+      
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+      
+      // Send to background script to forward to server
+      chrome.runtime.sendMessage({type: 'chat', message: message});
+    }
+    
+    // Listen for responses
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.type === 'response') {
+        const chat = document.getElementById('chat');
+        const botMsg = document.createElement('div');
+        botMsg.className = 'message bot';
+        botMsg.innerHTML = request.text;
+        chat.appendChild(botMsg);
+        chat.scrollTop = chat.scrollHeight;
+      }
+    });
+    
+    document.getElementById('messageInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
